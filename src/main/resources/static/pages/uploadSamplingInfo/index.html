@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>上传采样信息</title>
+		<link rel="stylesheet" href="./index.css" />
+		<link rel="stylesheet" href="../../css/pages.css" />
+		<link href="../../lib/mditor/css/mditor.min.css" rel="stylesheet">
+		<script src="../../js/pages.js"></script>
+		
+	</head>
+	<body>
+		<div id="app">
+			<el-form ref="form" :model="form" :rules="rules" label-width="100">
+				<el-form-item label="被采样人姓名" prop="isSamplingPerson.name">
+					<el-input v-model="form.isSamplingPerson.name"></el-input>
+				</el-form-item>
+				<el-form-item label="被采样人身份证号" prop="isSamplingPerson.idNumber">
+					<el-input v-model="form.isSamplingPerson.idNumber" maxlength="18" minlength="18" show-word-limit clearable></el-input>
+				</el-form-item>
+				<el-form-item label="采样人姓名" prop="samplingPerson.name">
+					<el-input v-model="form.samplingPerson.name"></el-input>
+				</el-form-item>
+				<el-form-item label="采样人身份证号" prop="samplingPerson.idNumber">
+					<el-input v-model="form.samplingPerson.idNumber" maxlength="18" minlength="18" show-word-limit clearable></el-input>
+				</el-form-item>
+				<el-form-item label="采样地点" prop="samplingPlace">
+					<el-input v-model="form.samplingPlace" clearable></el-input>
+				</el-form-item>
+				<el-form-item>
+					<el-button type="primary" @click="onSubmit()">提交</el-button>
+					<el-button>取消</el-button>
+				</el-form-item>
+			</el-form>
+		</div>
+	</body>
+	<script src="../../lib/mditor/js/mditor.js"></script>
+	<script src="./index.js"></script>
+</html>

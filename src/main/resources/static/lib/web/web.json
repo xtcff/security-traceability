@@ -1,0 +1,28 @@
+{
+	"name": "HHF",
+	"author":"HHF",
+	"version": "1.0.0",
+	"webInfo": {
+		"bg":"#545c64",
+		"textColor": "#fff",
+		"textColorActive": "#ffd04b"
+	},
+	"activeIndex":0,
+	"navs": [ 
+	{
+		"title": "核酸信息概览",
+		"icon": "el-icon-view",
+		"href": "pages/table.html",
+		"id": "1"
+	},{
+		"title": "上传采样信息",
+		"icon": "el-icon-upload",
+		"href": "pages/uploadSamplingInfo/index.html",
+		"id": "2"
+	},{
+		"title": "上传检测结果",
+		"icon": "el-icon-upload",
+		"href": "pages/uploadDetectResult/index.html",
+		"id": "3"
+	}]
+}

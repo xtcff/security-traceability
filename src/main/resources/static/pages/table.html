@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>核酸信息概览</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <script src="../lib/jquery-3.4.1/jquery-3.4.1.js"></script>
+    <link rel="stylesheet" href="../lib/element2.13.0/lib-master/theme-chalk/index.css"/>
+    <script src="../lib/vue/vue.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../lib/layer/layer.js"></script>
+    <script src="../lib/element2.13.0/lib-master/index.js"></script>
+    <script type='text/javascript' src='../lib/axios/dist/axios.js'></script>
+</head>
+<body>
+<div id="table">
+    <el-card class="box-card">
+        <template>
+            <el-table :data="tableData" height="520" border style="width: 100%">
+                <el-table-column type="expand">
+                    <template slot-scope="props">
+                        <el-form label-position="left" inline class="demo-table-expand">
+                            <el-form-item label="报告ID">
+                                <span>{{ props.row.reportId }}</span>
+                            </el-form-item>
+                            <el-form-item label="采样时间">
+                                <span>{{ props.row.samplingTime }}</span>
+                            </el-form-item>
+                            <el-form-item label="被采样人">
+                                <span>{{ props.row.isSamplingPerson.name }}</span><br/>
+                                <span>{{ props.row.isSamplingPerson.idNumber }}</span>
+                            </el-form-item>
+                            <el-form-item label="采样人">
+                                <span>{{ props.row.samplingPerson.name }}</span><br/>
+                                <span>{{ props.row.samplingPerson.idNumber }}</span>
+                            </el-form-item>
+                            <el-form-item label="采样地点">
+                                <span>{{ props.row.samplingPlace }}</span>
+                            </el-form-item>
+                            <template v-if="props.row.detectResult !== undefined">
+                                <el-form-item label="检测机构">
+                                    <span>{{ props.row.detectHospital }}</span>
+                                </el-form-item>
+                                <el-form-item label="检测人">
+                                    <span>{{ props.row.detectPerson.name }}</span><br/>
+                                    <span>{{ props.row.detectPerson.idNumber }}</span>
+                                </el-form-item>
+                                <el-form-item label="检测时间">
+                                    <span>{{ props.row.detectTime }}</span>
+                                </el-form-item>
+                                <el-form-item label="检测结果">
+                                    <span>{{ props.row.detectResult }}</span>
+                                </el-form-item>
+                            </template>
+                        </el-form>
+                    </template>
+                </el-table-column>
+                <el-table-column type="index" label="序号" align="center" width="50">
+                </el-table-column>
+                <el-table-column prop="isSamplingPerson.name" label="被采样人" align="center" width="180">
+                </el-table-column>
+                <el-table-column prop="samplingTime" label="采样时间" width="180">
+                </el-table-column>
+                <el-table-column prop="detectHospital" label="检测机构">
+                </el-table-column>
+                <el-table-column prop="detectResult" label="检测结果">
+                </el-table-column>
+
+                <el-table-column fixed="right" align="center" label="操作" width="200">
+                    <template slot-scope="props">
+                        <!--								<el-button @click="handleLook(scope.row)" type="primary" size="mini" icon="el-icon-view">查看</el-button>-->
+                        <template v-if="props.row.detectResult === undefined">
+                            <el-button type="success" size="mini" icon="el-icon-upload"
+                                       @click="uploadResult(props.row)">上传检测结果
+                            </el-button>
+                            <!--<el-button type="primary" @click="dialogTableVisible = true" icon="el-icon-view" circle size="mini"></el-button>-->
+                            <!--<el-button type="success" icon="el-icon-edit" circle size="mini"></el-button>-->
+                        </template>
+
+                    </template>
+                </el-table-column>
+            </el-table>
+        </template>
+        <!-- 分页 -->
+        <div class="block" style="margin-top: 20px;">
+            <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
+                           :current-page="currentPage"
+                           :page-sizes="[100, 200, 300, 400]" :page-size="100"
+                           layout="total, sizes, prev, pager, next, jumper" :total="400">
+            </el-pagination>
+        </div>
+    </el-card>
+</div>
+</body>
+<style>
+    .demo-table-expand {
+        font-size: 0;
+    }
+
+    .demo-table-expand label {
+        width: 90px;
+        color: #99a9bf;
+    }
+
+    .demo-table-expand .el-form-item {
+        margin-right: 0;
+        margin-bottom: 0;
+        width: 50%;
+    }
+</style>
+<script>
+    var vm = new Vue({
+        el: "#table",
+        data: {
+            currentPage: 1,
+            dialogTableVisible: false,
+            tableData: []
+        },
+        created: function () {
+            axios.post("/query/queryNATInfos").then(res => {
+                this.tableData = res.data;
+            })
+        },
+        methods: {
+            resetSetItem(key, newVal) {
+                let orignalSetItem = window.localStorage.setItem;   // 原生localStorage.setItem方法
+                localStorage.setItem = function (key, newValue) {
+                    let setItemEvent = new Event("setItemEvent");  // 重写注册setItem
+                    setItemEvent.key = key;
+                    setItemEvent.newValue = newValue;
+                    window.dispatchEvent(setItemEvent);            // 派发setItem
+                    orignalSetItem.apply(this, arguments);         // 设置值
+                }
+            },
+            handleSizeChange(val) {
+                console.log(`每页 ${val} 条`);
+            },
+            handleCurrentChange(val) {
+                console.log(`当前页: ${val}`);
+            },
+            uploadResult(props) {
+                console.log(111)
+                sessionStorage.setItem('reportId', props.reportId);
+                this.resetSetItem('reportId', props.reportId)
+            },
+        }
+    })
+</script>
+</html>

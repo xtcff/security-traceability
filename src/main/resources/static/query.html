@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>查询个人核酸信息</title>
+    <script src="theme/vue.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="./lib/element2.13.0/lib-master/index.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../../lib/jquery-3.4.1/jquery-3.4.1.js" type="text/javascript" charset="utf-8"></script>
+    <link rel="stylesheet" href="./lib/element2.13.0/lib-master/theme-chalk/index.css" />
+    <script src="./lib/layer/layer.js"></script>
+</head>
+<body>
+<div id="query_area">
+    <el-form :model="form" :rules="rules" ref="form" class="form" status-icon>
+        <el-form-item label="身份证号" prop="idNumber">
+            <el-input v-model="form.idNumber" placeholder="请输入身份证号"></el-input>
+        </el-form-item>
+        <el-form-item label="姓名" prop="name">
+            <el-input v-model="form.name" placeholder="请输入姓名"></el-input>
+        </el-form-item>
+        <el-form-item>
+            <el-button type="primary" class="login_btn" @click="query()">查询</el-button>
+        </el-form-item>
+    </el-form>
+</div>
+<div id="show_area">
+
+</div>
+</body>
+<script>
+  new Vue({
+      el: '#query_area',
+      data() {
+          return {
+              form: {
+                  idNumber: '',
+                  name: ''
+              },
+              rules: {
+                  idNumber: [{
+                      required: true,
+                      message: '请输入正确的身份证号',
+                      trigger: 'blur'
+                  },
+                  {
+                      min: 18,
+                      message: '请输入18位身份证号',
+                      trigger: 'blur'
+                  }],
+                  name: {
+                      required: true,
+                      message: '请输入姓名',
+                      trigger: 'blur'
+                  },
+              },
+
+          }
+      },
+      methods: {
+          query() {
+              this.$refs['form'].validate((valid) => {
+                  if (valid) {
+                      axios.post("/query/queryNATInfosByPerson", {person:this.form}).then(function(response) {
+                          var jsonObject = response.data;
+                          var htmlStr = "";
+                          for (let i = 0;i < jsonObject.length;i++) {
+                              htmlStr += "<table><tr><td>被采样人</td><td>" + jsonObject[i]['isSamplingPerson']['name'] + "</td></tr>";
+                              htmlStr += "<tr><td>被采样人身份证号</td><td>" + jsonObject[i]['isSamplingPerson']['idNumber'] + "</td></tr>";
+                              htmlStr += "<tr><td>采样时间</td><td>" + jsonObject[i]['samplingTime'] + "</td></tr>";
+                              htmlStr += "<tr><td>采样人</td><td>" + jsonObject[i]['samplingPerson']['name'] + "</td></tr>";
+                              htmlStr += "<tr><td>采样地点</td><td>" + jsonObject[i]['samplingPlace'] + "</td></tr>";
+                              if (jsonObject[i]['detectResult'] != null){
+                                  htmlStr += "<tr><td>检测机构</td><td>" + jsonObject[i]['detectHospital'] + "</td></tr>";
+                                  htmlStr += "<tr><td>检测时间</td><td>" + jsonObject[i]['detectTime'] + "</td></tr>";
+                                  htmlStr += "<tr><td>检测人</td><td>" + jsonObject[i]['detectPerson']['name'] + "</td></tr>";
+                                  htmlStr += "<tr><td>检测结果</td><td>" + jsonObject[i]['detectResult'] + "</td></tr></table><hr>";
+                              } else {
+                                  htmlStr += "<tr><td>检测机构</td><td></td></tr>";
+                                  htmlStr += "<tr><td>检测时间</td><td></td></tr>";
+                                  htmlStr += "<tr><td>检测人</td><td></td></tr>";
+                                  htmlStr += "<tr><td>检测结果</td><td></td></tr></table><hr>";
+                              }
+                          }
+                          document.getElementById("show_area").innerHTML =  htmlStr;
+                      }).catch(function (error){
+                          layer.msg("查询出错啦！")
+                      })
+                  } else {
+                      console.log('error submit!!');
+                      return false;
+                  }
+              });
+          },
+      }
+  })
+</script>
+</html>
