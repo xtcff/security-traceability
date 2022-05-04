@@ -25,7 +25,7 @@ var vm = new Vue({
 		submitForm() {
 			this.$refs['ruleForm'].validate((valid) => {
 				if (valid) {
-					 axios.post("http://localhost:8085/login/admin", this.ruleForm).then((res) => {
+					 axios.post("/login/admin", this.ruleForm).then((res) => {
 					 	console.log(res.data)
 					 	if (res.status === 200) {
 					 		window.location.href = "../../index.html"
@@ -33,7 +33,8 @@ var vm = new Vue({
 					 	}
 					 	layer.msg("登录成功！")
 					 }).catch(function (error){
-						 layer.msg("用户名或密码错误！")
+					 	console.log(error)
+						layer.msg("用户名或密码错误！")
 					 })
 				} else {
 					console.log('error submit!!');

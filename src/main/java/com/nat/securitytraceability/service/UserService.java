@@ -20,9 +20,8 @@ public class UserService {
     UserMapper userMapper;
 
     /**
-     * 根据个人信息查询所有核酸信息
-     *
-     * @return String
+     * 查询用户
+     * @return User
      */
     public User adminLogin(String username) {
         return userMapper.selectOne(Wrappers.lambdaQuery(User.class).

@@ -24,7 +24,7 @@ public class QueryController {
      * @return String
      */
     @PostMapping("/queryNATInfosByPerson")
-    public String queryNATInfosByPerson(@RequestBody QueryNATInfosReq queryNATInfosReq) {
+    public String queryNATInfosByPerson(@RequestBody QueryNATInfosReq queryNATInfosReq) throws Exception {
         log.info("QueryController queryNATInfos start, [{}]", queryNATInfosReq);
         String resp = JSON.toJSONString(queryService.queryNATInfosByPerson(queryNATInfosReq));
         log.info("QueryController queryNATInfos end, resp = [{}]", resp);
@@ -36,7 +36,7 @@ public class QueryController {
      * @return String
      */
     @PostMapping("/queryNATInfos")
-    public String queryNATInfos() {
+    public String queryNATInfos() throws Exception {
         log.info("QueryController queryNATInfos start");
         String resp = JSON.toJSONString(queryService.queryNATInfos());
         log.info("QueryController queryNATInfos end, resp = [{}]", resp);

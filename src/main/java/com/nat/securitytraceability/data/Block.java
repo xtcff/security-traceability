@@ -37,12 +37,12 @@ public class Block implements Serializable {
     private long timestamp;
 
     /**
-     * 工作量证明，计算正确hash值的次数
+     * 证明是哪个节点生成的该区块
      */
-    private int nonce;
+    private String publicKey;
 
     /**
-     * 当前区块存储的核酸信息集合（例如检测时间、检测医院、检测人、被检测人等）
+     * 加密后的核酸信息集合
      */
-    private List<NATInfo> natInfos;
+    private String natInfosString;
 }

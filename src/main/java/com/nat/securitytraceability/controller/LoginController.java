@@ -27,7 +27,7 @@ public class LoginController {
     @PostMapping("/admin")
     public String adminLogin(@RequestBody LoginReq loginReq) throws Exception {
         log.info("LoginController adminLogin start, [{}]", loginReq);
-        User user = userService.adminLogin(loginReq.getName());
+        User user = userService.adminLogin(loginReq.getUsername());
         log.info("LoginController adminLogin end, resp = [{}]", user);
         if (user.getPassword().equals(loginReq.getPassword())) {
             return JSON.toJSONString(user);

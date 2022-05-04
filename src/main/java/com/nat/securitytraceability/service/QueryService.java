@@ -1,11 +1,16 @@
 package com.nat.securitytraceability.service;
 
+import com.alibaba.fastjson.JSON;
+import com.nat.securitytraceability.data.Block;
 import com.nat.securitytraceability.data.BlockChain;
 import com.nat.securitytraceability.data.NATInfo;
 import com.nat.securitytraceability.req.QueryNATInfosReq;
+import com.nat.securitytraceability.util.RSAUtil;
+import com.nat.securitytraceability.util.RocksDBUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -26,9 +31,14 @@ public class QueryService {
      * 根据个人信息查询所有核酸信息
      * @return String
      */
-    public List<NATInfo> queryNATInfosByPerson(QueryNATInfosReq queryNATInfosReq) {
+    public List<NATInfo> queryNATInfosByPerson(QueryNATInfosReq queryNATInfosReq) throws Exception {
         //所有采样和检测信息
-        List<NATInfo> natInfosTemp = blockChain.getPackedNATInfos();
+        List<NATInfo> natInfosTemp = new ArrayList<>(blockChain.getPackedNATInfos());
+        String natInfosStr;
+        for (Block block : blockChain.getBlockChain()) {
+            natInfosStr = RSAUtil.decryptByPublicKey(block.getPublicKey(), block.getNatInfosString());
+            natInfosTemp.addAll(JSON.parseArray(natInfosStr, NATInfo.class));
+        }
         //根据个人信息筛选
         natInfosTemp = natInfosTemp.stream()
                 .filter(natInfo -> (natInfo.getIsSamplingPerson().getIdNumber()
@@ -42,11 +52,15 @@ public class QueryService {
      * 查询所有核酸信息
      * @return String
      */
-    public List<NATInfo> queryNATInfos() {
+    public List<NATInfo> queryNATInfos() throws Exception {
         //所有采样和检测信息
-        List<NATInfo> natInfosTemp = blockChain.getPackedNATInfos();
+        List<NATInfo> natInfosTemp = new ArrayList<>(blockChain.getPackedNATInfos());
+        String natInfosStr;
+        for (Block block : blockChain.getBlockChain()) {
+            natInfosStr = RSAUtil.decryptByPublicKey(block.getPublicKey(), block.getNatInfosString());
+            natInfosTemp.addAll(JSON.parseArray(natInfosStr, NATInfo.class));
+        }
         return filterAndSort(natInfosTemp);
-
     }
 
     /**

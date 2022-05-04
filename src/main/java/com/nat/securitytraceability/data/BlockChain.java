@@ -1,11 +1,12 @@
 package com.nat.securitytraceability.data;
 
+import com.nat.securitytraceability.util.RSAUtil;
 import lombok.Data;
 import org.java_websocket.WebSocket;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -32,10 +33,21 @@ public class BlockChain {
     private List<WebSocket> socketsList = new CopyOnWriteArrayList<>();
 
     /**
-     * 挖矿的难度系数
+     * 节点公钥
      */
-    @Value("${block.difficulty}")
-    private int difficulty;
+    @Value("${rsaKeyPair.publicKey}")
+    private String publicKey;
+
+    /**
+     * 节点私钥
+     */
+    @Value("${rsaKeyPair.privateKey}")
+    private String privateKey;
+
+    /**
+     * 所有节点的公钥
+     */
+    private Set<String> publicKeys = new HashSet<>();
 
     /**
      * 当前节点p2pserver端口号
@@ -56,15 +68,5 @@ public class BlockChain {
      */
     public Block getLatestBlock() {
         return blockChain.size() > 0 ? blockChain.get(blockChain.size() - 1) : null;
-    }
-
-    /**
-     * 替换最新的区块
-     */
-    public void setLatestBlock(Block block) {
-        packedNATInfos.removeAll(getLatestBlock().getNatInfos());
-        blockChain.remove(blockChain.size() - 1);
-        blockChain.add(block);
-        packedNATInfos.addAll(block.getNatInfos());
     }
 }

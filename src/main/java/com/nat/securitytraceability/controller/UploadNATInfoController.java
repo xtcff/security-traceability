@@ -24,7 +24,7 @@ public class UploadNATInfoController {
      * @return String
      */
     @PostMapping("/uploadSamplingNATInfo")
-    public String uploadSamplingNATInfo(@RequestBody UploadNATInfoReq uploadNATInfoReq) {
+    public String uploadSamplingNATInfo(@RequestBody UploadNATInfoReq uploadNATInfoReq) throws Exception {
         log.info("UploadNATInfoController uploadSamplingNATInfo start, [{}]", uploadNATInfoReq);
         String resp = uploadService.uploadNATInfo(uploadNATInfoReq);
         log.info("UploadNATInfoController uploadSamplingNATInfo end, resp = [{}]", resp);
@@ -36,7 +36,7 @@ public class UploadNATInfoController {
      * @return String
      */
     @PostMapping("/uploadDetectNATInfo")
-    public String uploadDetectNATInfo(@RequestBody UploadNATInfoReq uploadNATInfoReq) {
+    public String uploadDetectNATInfo(@RequestBody UploadNATInfoReq uploadNATInfoReq) throws Exception {
         log.info("UploadNATInfoController uploadDetectNATInfo start, [{}]", uploadNATInfoReq);
         String resp = uploadService.uploadNATInfo(uploadNATInfoReq);
         log.info("UploadNATInfoController uploadDetectNATInfo end, resp = [{}]", resp);

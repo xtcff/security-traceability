@@ -38,6 +38,7 @@ public class BlockChainController {
     public String scanBlock() {
         log.info("BlockChainController BlockChain scanBlock start");
         String resp = JSON.toJSONString(blockChain.getBlockChain());
+        log.info("BlockChainController BlockChain scanBlock end, resp11111111111 = [{}]", blockChain.getPublicKeys());
         log.info("BlockChainController BlockChain scanBlock end, resp = [{}]", resp);
         return resp;
     }
@@ -59,7 +60,7 @@ public class BlockChainController {
      * @return String
      */
     @GetMapping("/create")
-    public String createFirstBlock() {
+    public String createFirstBlock() throws Exception {
         log.info("BlockChainController BlockChain createFirstBlock start");
         String genesisBlock = JSON.toJSONString(blockChainService.createGenesisBlock());
         log.info("BlockChainController BlockChain createFirstBlock end, genesisBlock = [{}]", genesisBlock);
@@ -68,11 +69,10 @@ public class BlockChainController {
 
 
     /**
-     * 工作量证明PoW
-     * 挖矿生成新的区块
+     * 生成新区块
      */
     @GetMapping("/mine")
-    public String createNewBlock(@RequestBody CreateNewBlockReq createNewBlockReq) {
+    public String createNewBlock(@RequestBody CreateNewBlockReq createNewBlockReq) throws Exception {
         log.info("BlockChainController BlockChain createNewBlock start, createNewBlock:[{}]", createNewBlockReq);
         blockChainService.createBlock(createNewBlockReq);
         log.info("BlockChainController BlockChain createFirstBlock end");
@@ -80,13 +80,25 @@ public class BlockChainController {
     }
 
     /**
-     * 查看数据库
+     * 查看数据库区块
      * @return String
      */
-    @GetMapping("/database/{database}")
-    public String scanDatabase(@PathVariable("database") String s) throws Exception {
+    @GetMapping("/database/block/{block}")
+    public String scanDatabaseBlock(@PathVariable("block") String s) throws Exception {
         log.info("BlockChainController BlockChain scanDatabase start");
         String resp = JSON.toJSONString(rocksDBUtil.getBlock(s));
+        log.info("BlockChainController BlockChain scanDatabase end, resp = [{}]", resp);
+        return resp;
+    }
+
+    /**
+     * 查看数据库最新核酸
+     * @return String
+     */
+    @GetMapping("/database/natInfos")
+    public String scanDatabaseNATInfos() throws Exception {
+        log.info("BlockChainController BlockChain scanDatabase start");
+        String resp = JSON.toJSONString(rocksDBUtil.getNatInfos());
         log.info("BlockChainController BlockChain scanDatabase end, resp = [{}]", resp);
         return resp;
     }

@@ -20,6 +20,7 @@
         <kryo.version>4.0.0</kryo.version>
         <rocksdb.version>6.6.4</rocksdb.version>
         <mybatis-plus.version>3.4.2</mybatis-plus.version>
+        <commons.lang3.version>3.12.0</commons.lang3.version>
     </properties>
 
     <dependencies>
@@ -82,6 +83,11 @@
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
             <version>${mybatis-plus.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons.lang3.version}</version>
         </dependency>
     </dependencies>
 

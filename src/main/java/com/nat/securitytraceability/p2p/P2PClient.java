@@ -1,5 +1,7 @@
 package com.nat.securitytraceability.p2p;
 
+import com.alibaba.fastjson.JSON;
+import com.nat.securitytraceability.data.BlockChain;
 import com.nat.securitytraceability.service.P2PService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +26,6 @@ public class P2PClient {
     @Resource
     P2PService p2pService;
 
-
     public void connectToPeer(String[] addresses) {
         for(String address: addresses){
             try {
@@ -35,10 +36,11 @@ public class P2PClient {
                      */
                     @Override
                     public void onOpen(ServerHandshake serverHandshake) {
-                        //客户端发送请求，查询最新区块
-                        log.info("P2PClient connectToPeer 连接节点 [{}] 成功",address);
-                        p2pService.write(this, p2pService.queryLatestBlockMsg());
                         p2pService.getSockets().add(this);
+                        //客户端发送请求，查询最新区块
+                        p2pService.write(this, p2pService.queryLatestBlockMsg());
+                        //客户端发送请求，查询最新核酸
+                        p2pService.write(this, p2pService.queryLatestNATInfos());
                     }
 
                     /**
@@ -48,7 +50,7 @@ public class P2PClient {
                     @Override
                     public void onMessage(String msg) {
                         log.info("P2PClient connectToPeer 接收到节点 [{}] 消息:[{}]", address, msg);
-                        p2pService.handleMessage(this, msg, p2pService.getSockets());
+                        p2pService.handleMessage(this, msg);
                     }
 
                     @SneakyThrows

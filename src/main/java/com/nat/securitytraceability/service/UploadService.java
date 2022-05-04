@@ -8,6 +8,7 @@ import com.nat.securitytraceability.p2p.BlockConstant;
 import com.nat.securitytraceability.p2p.Message;
 import com.nat.securitytraceability.req.CreateNewBlockReq;
 import com.nat.securitytraceability.req.UploadNATInfoReq;
+import com.nat.securitytraceability.util.RSAUtil;
 import com.nat.securitytraceability.util.RocksDBUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,7 +43,7 @@ public class UploadService {
     @Value("${block.size}")
     private int blockSize;
 
-    public String uploadNATInfo(UploadNATInfoReq uploadNATInfoReq) {
+    public String uploadNATInfo(UploadNATInfoReq uploadNATInfoReq) throws Exception {
         for (NATInfo natInfo : uploadNATInfoReq.getNatInfos()) {
             if (natInfo.getReportId() == null) {
                 natInfo.setReportId(UUID.randomUUID().toString().replaceAll("-",""));
@@ -56,51 +57,52 @@ public class UploadService {
                 natInfo.setDetectTime(System.currentTimeMillis());
             }
         }
-        Block latestBlock = blockChain.getLatestBlock();
-        if ((latestBlock.getNatInfos().size() + uploadNATInfoReq.getNatInfos().size()) <= blockSize) {
-            //区块未满或刚满, 直接加入信息
-            for (NATInfo natInfo : uploadNATInfoReq.getNatInfos()) {
-                latestBlock.getNatInfos().add(natInfo);
-            }
-            //添加到内存中已打包核酸信息
-            blockChain.getPackedNATInfos().addAll(uploadNATInfoReq.getNatInfos());
-            //存库
-            try {
-                rocksDBUtil.updateLatestBlock(latestBlock);
+        if (blockChain.getPackedNATInfos().size() + uploadNATInfoReq.getNatInfos().size() <= blockSize) {
+            //打包的核酸信息未满, 直接加入信息
+            try{
+                blockChain.getPackedNATInfos().addAll(uploadNATInfoReq.getNatInfos());
+                rocksDBUtil.updateNATInfos(blockChain.getPackedNATInfos());
             } catch (Exception e) {
                 log.error("信息添加失败！");
                 return "新增信息存库失败";
             }
         } else {
-            //区块要满, 需生成新区块
-            int size = blockSize - latestBlock.getNatInfos().size();
+            //打包的核酸信息已满, 需生成新区块
+            int size = blockSize - blockChain.getPackedNATInfos().size();
             List<NATInfo> lastBlockNatInfos = uploadNATInfoReq.getNatInfos().subList(0,size);
             List<NATInfo> nextBlockNatInfos = uploadNATInfoReq.getNatInfos().subList(size,uploadNATInfoReq.getNatInfos().size());
-            if (lastBlockNatInfos.size() != 0) {
-                try {
-                    latestBlock.getNatInfos().addAll(lastBlockNatInfos);
-                    latestBlock.setHash(blockChainService.calculateHash(latestBlock.getPreviousHash(), latestBlock.getNatInfos(), latestBlock.getNonce()));
-                    rocksDBUtil.updateLatestBlock(latestBlock);
-                } catch (Exception e) {
-                    log.error("信息添加失败！");
-                    return "新增信息存库失败";
-                }
+            try {
+                blockChain.getPackedNATInfos().addAll(lastBlockNatInfos);
+                CreateNewBlockReq createNewBlockReq = new CreateNewBlockReq();
+                createNewBlockReq.setNatInfos(blockChain.getPackedNATInfos());
+                blockChainService.createBlock(createNewBlockReq);
+                blockChain.setPackedNATInfos(nextBlockNatInfos);
+                rocksDBUtil.updateNATInfos(blockChain.getPackedNATInfos());
+            } catch (Exception e) {
+                log.error("信息添加失败！");
+                return "新增信息存库失败";
             }
-            log.info("nextBlockNatInfos:[{}]", nextBlockNatInfos);
-            CreateNewBlockReq createNewBlockReq = new CreateNewBlockReq();
-            createNewBlockReq.setNatInfos(new ArrayList<>(nextBlockNatInfos));
-            blockChainService.createBlock(createNewBlockReq);
+            //向其他节点同步最新区块
+            Message message = new Message();
+            message.setType(BlockConstant.RESPONSE_LATEST_BLOCK);
+            message.setData(JSON.toJSONString(blockChain.getLatestBlock()));
+            p2PService.broadcast(JSON.toJSONString(message));
         }
-        //向其他节点同步信息
+        //向其他节点同步最新核酸信息
         Message message = new Message();
-        message.setType(BlockConstant.RESPONSE_LATEST_BLOCK);
-        message.setData(JSON.toJSONString(latestBlock));
-        p2PService.broadcast(JSON.toJSONString(latestBlock));
+        message.setType(BlockConstant.RESPONSE_LATEST_NATINFOS);
+        message.setData(JSON.toJSONString(blockChain.getPackedNATInfos()));
+        p2PService.broadcast(JSON.toJSONString(message));
         return "上传成功！";
     }
 
-    public NATInfo getNATInfoByReportId(String reportId) {
-        List<NATInfo> natInfosTemp = blockChain.getPackedNATInfos();
+    public NATInfo getNATInfoByReportId(String reportId) throws Exception {
+        List<NATInfo> natInfosTemp = new ArrayList<>(blockChain.getPackedNATInfos());
+        String natInfosStr;
+        for (Block block : blockChain.getBlockChain()) {
+            natInfosStr = RSAUtil.decryptByPublicKey(block.getPublicKey(), block.getNatInfosString());
+            natInfosTemp.addAll(JSON.parseArray(natInfosStr, NATInfo.class));
+        }
         //根据个人信息筛选
         natInfosTemp = natInfosTemp.stream()
                 .filter(natInfo -> (natInfo.getReportId().equals(reportId)))
