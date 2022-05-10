@@ -2,6 +2,7 @@ package com.nat.securitytraceability.controller;
 
 import com.alibaba.fastjson.JSON;
 import com.nat.securitytraceability.req.QueryNATInfosReq;
+import com.nat.securitytraceability.req.QueryPageNATInfosReq;
 import com.nat.securitytraceability.service.QueryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -38,7 +39,19 @@ public class QueryController {
     @PostMapping("/queryNATInfos")
     public String queryNATInfos() throws Exception {
         log.info("QueryController queryNATInfos start");
-        String resp = JSON.toJSONString(queryService.queryNATInfos());
+        String resp = JSON.toJSONString(queryService.transTimeToDate(queryService.queryNATInfos()));
+        log.info("QueryController queryNATInfos end, resp = [{}]", resp);
+        return resp;
+    }
+
+    /**
+     * 分页条件查询所有核酸报告
+     * @return String
+     */
+    @PostMapping("/queryPageNATInfos")
+    public String queryPageNATInfos(@RequestBody QueryPageNATInfosReq queryPageNATInfosReq) throws Exception {
+        log.info("QueryController queryNATInfos start, req = [{}]", queryPageNATInfosReq);
+        String resp = JSON.toJSONString(queryService.queryPageNATInfos(queryPageNATInfosReq));
         log.info("QueryController queryNATInfos end, resp = [{}]", resp);
         return resp;
     }

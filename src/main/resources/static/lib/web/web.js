@@ -30,7 +30,6 @@ var vueIndex = new Vue({
          *可修改的配置信息
          */
         adminName: sessionStorage.getItem('username'),
-        reportId: sessionStorage.getItem('reportId'),
         // 左侧导航栏
         webInfo: {
             bg: config.webInfo.bg,
@@ -60,23 +59,12 @@ var vueIndex = new Vue({
         if (this.adminName === null) {
             window.location.href = "./pages/login/login.html"
         }
-        console.log(111)
-        window.addEventListener('setItem', () => {
-            console.log(sessionStorage.getItem('reportId'))
-            this.reportId = sessionStorage.getItem('reportId')
-        })
     },
     watch: {
         getTabsBoxWidth: function () {
             // 判断边界
             var tbox = $('.tab-item-box')
-        },
-        reportId(item1, item2) {
-            if (item2 !== null) {
-                this.tabActive(this.navs[2])
-            }
-        },
-        immediate: true
+        }
     },
     methods: {
         isShowNav: function (e) { //隐藏显示左边导航栏

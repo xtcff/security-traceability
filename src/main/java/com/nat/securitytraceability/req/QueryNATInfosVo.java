@@ -1,17 +1,15 @@
-package com.nat.securitytraceability.data;
+package com.nat.securitytraceability.req;
 
+import com.nat.securitytraceability.data.Person;
 import lombok.Data;
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 /**
- * 核酸检测信息
- *
+ * 查询核酸检测信息返回值
  * @author hhf
- *
  */
 @Data
-public class NATInfo implements Serializable {
+public class QueryNATInfosVo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -33,7 +31,7 @@ public class NATInfo implements Serializable {
     /**
      * 采样时间
      */
-    private LocalDateTime samplingTime;
+    private String samplingTime;
 
     /**
      * 采样地点
@@ -48,7 +46,7 @@ public class NATInfo implements Serializable {
     /**
      * 检测时间
      */
-    private LocalDateTime detectTime;
+    private String detectTime;
 
     /**
      * 检测人

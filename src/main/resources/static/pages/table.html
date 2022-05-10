@@ -14,8 +14,33 @@
 <body>
 <div id="table">
     <el-card class="box-card">
+        <div slot="header" class="clearfix">
+            <el-input v-model="inputForReportId" placeholder="请输入报告单号" style="width: 18%;margin-left: 1%" clearable></el-input>
+            <el-input v-model="inputForIdNumber" placeholder="请输入身份证号" style="width: 18%;margin-left: 1%"
+                      maxlength="18"
+                      show-word-limit
+                      clearable></el-input>
+            <el-select v-model="selectValue" placeholder="请选择检测结果" style="width: 12%;margin-left: 1%" clearable>
+                <el-option
+                        v-for="item in options"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value">
+                </el-option>
+            </el-select>
+            <el-date-picker
+                    v-model="samplingTime"
+                    type="datetimerange"
+                    range-separator="-"
+                    start-placeholder="开始时间"
+                    end-placeholder="结束时间"
+                    style="width: 25%;margin-left: 1%">
+            </el-date-picker>
+            <el-button type="primary" icon="el-icon-search" style="margin-left: 3%" @click="queryByInput">搜索</el-button>
+            <el-button type="info" plain @click="clearInput">清空</el-button>
+        </div>
         <template>
-            <el-table :data="tableData" height="520" border style="width: 100%">
+            <el-table :data="pageTable.tableData" border style="width: 100%; height:100%">
                 <el-table-column type="expand">
                     <template slot-scope="props">
                         <el-form label-position="left" inline class="demo-table-expand">
@@ -54,7 +79,7 @@
                         </el-form>
                     </template>
                 </el-table-column>
-                <el-table-column type="index" label="序号" align="center" width="50">
+                <el-table-column type="index" :index="indexMethod" label="序号" align="center" width="50">
                 </el-table-column>
                 <el-table-column prop="isSamplingPerson.name" label="被采样人" align="center" width="180">
                 </el-table-column>
@@ -67,13 +92,10 @@
 
                 <el-table-column fixed="right" align="center" label="操作" width="200">
                     <template slot-scope="props">
-                        <!--								<el-button @click="handleLook(scope.row)" type="primary" size="mini" icon="el-icon-view">查看</el-button>-->
                         <template v-if="props.row.detectResult === undefined">
                             <el-button type="success" size="mini" icon="el-icon-upload"
                                        @click="uploadResult(props.row)">上传检测结果
                             </el-button>
-                            <!--<el-button type="primary" @click="dialogTableVisible = true" icon="el-icon-view" circle size="mini"></el-button>-->
-                            <!--<el-button type="success" icon="el-icon-edit" circle size="mini"></el-button>-->
                         </template>
 
                     </template>
@@ -81,11 +103,14 @@
             </el-table>
         </template>
         <!-- 分页 -->
-        <div class="block" style="margin-top: 20px;">
-            <el-pagination background @size-change="handleSizeChange" @current-change="handleCurrentChange"
-                           :current-page="currentPage"
-                           :page-sizes="[100, 200, 300, 400]" :page-size="100"
-                           layout="total, sizes, prev, pager, next, jumper" :total="400">
+        <div class="block" style="margin-top: 20px;text-align: right;">
+            <el-pagination background
+                           @size-change="handleSizeChange"
+                           @current-change="handleCurrentChange"
+                           :current-page="pageTable.pageNum"
+                           :page-sizes="[10, 20, 30, 40]" :page-size="pageTable.pageSize"
+                           layout="total, sizes, prev, pager, next, jumper"
+                           :total="pageTable.total">
             </el-pagination>
         </div>
     </el-card>
@@ -95,12 +120,10 @@
     .demo-table-expand {
         font-size: 0;
     }
-
     .demo-table-expand label {
         width: 90px;
         color: #99a9bf;
     }
-
     .demo-table-expand .el-form-item {
         margin-right: 0;
         margin-bottom: 0;
@@ -111,36 +134,84 @@
     var vm = new Vue({
         el: "#table",
         data: {
-            currentPage: 1,
-            dialogTableVisible: false,
-            tableData: []
+            inputForReportId: '',
+            inputForIdNumber: '',
+            options: [{
+                value: '阴性',
+                label: '阴性'
+            }, {
+                value: '阳性',
+                label: '阳性'
+            }],
+            selectValue: '',
+            samplingTime: [],
+            pageTable: {
+                pageNum: 1,
+                pageSize: 10,
+                size: 1,
+                total: 0,
+                pages: 1,
+                tableData: []
+            }
         },
         created: function () {
-            axios.post("/query/queryNATInfos").then(res => {
-                this.tableData = res.data;
+            axios.post("/query/queryPageNATInfos", {"pageNum": this.pageTable.pageNum,"pageSize": this.pageTable.pageSize}).then(res => {
+                this.pageTable.tableData = res.data.list;
+                this.pageTable.size = res.data.size;
+                this.pageTable.total = res.data.total;
+                this.pageTable.pages = res.data.pages;
             })
         },
         methods: {
-            resetSetItem(key, newVal) {
-                let orignalSetItem = window.localStorage.setItem;   // 原生localStorage.setItem方法
-                localStorage.setItem = function (key, newValue) {
-                    let setItemEvent = new Event("setItemEvent");  // 重写注册setItem
-                    setItemEvent.key = key;
-                    setItemEvent.newValue = newValue;
-                    window.dispatchEvent(setItemEvent);            // 派发setItem
-                    orignalSetItem.apply(this, arguments);         // 设置值
-                }
+            indexMethod(index) {
+                return index + (this.pageTable.pageNum - 1) * this.pageTable.pageSize + 1;
             },
             handleSizeChange(val) {
-                console.log(`每页 ${val} 条`);
+                axios.post("/query/queryPageNATInfos", {"pageNum": this.pageTable.pageNum,"pageSize": val}).then(res => {
+                    this.pageTable.tableData = res.data.list;
+                    this.pageTable.pageSize = res.data.pageSize;
+                    this.pageTable.size = res.data.size;
+                    this.pageTable.total = res.data.total;
+                    this.pageTable.pages = res.data.pages;
+                })
             },
             handleCurrentChange(val) {
-                console.log(`当前页: ${val}`);
+                axios.post("/query/queryPageNATInfos", {"pageNum": val,"pageSize": this.pageTable.pageSize}).then(res => {
+                    this.pageTable.tableData = res.data.list;
+                    this.pageTable.pageNum = res.data.pageNum;
+                    this.pageTable.size = res.data.size;
+                    this.pageTable.total = res.data.total;
+                    this.pageTable.pages = res.data.pages;
+                })
+            },
+            queryByInput(){
+                var params = {
+                    "pageNum": this.pageTable.pageNum,
+                    "pageSize": this.pageTable.pageSize,
+                    "reportId": this.inputForReportId,
+                    "idNumber": this.inputForIdNumber,
+                    "detectResult": this.selectValue,
+                    "samplingTimeBegin": this.samplingTime[0],
+                    "samplingTimeEnd": this.samplingTime[1]
+                };
+                axios.post("/query/queryPageNATInfos", params).then(res => {
+                    this.pageTable.tableData = res.data.list;
+                    this.pageTable.pageNum = res.data.pageNum;
+                    this.pageTable.pageSize = res.data.pageSize;
+                    this.pageTable.size = res.data.size;
+                    this.pageTable.total = res.data.total;
+                    this.pageTable.pages = res.data.pages;
+                });
+            },
+            clearInput(){
+                this.inputForReportId = '';
+                this.inputForIdNumber = '';
+                this.selectValue = '';
+                this.samplingTime = [];
+                this.queryByInput();
             },
             uploadResult(props) {
-                console.log(111)
-                sessionStorage.setItem('reportId', props.reportId);
-                this.resetSetItem('reportId', props.reportId)
+
             },
         }
     })

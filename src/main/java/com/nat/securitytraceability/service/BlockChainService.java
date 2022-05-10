@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -61,14 +62,14 @@ public class BlockChainService {
         natInfoForPersonOne.setReportId(UUID.randomUUID().toString().replaceAll("-", ""));
         natInfoForPersonOne.setIsSamplingPerson(person1);
         natInfoForPersonOne.setSamplingPerson(person0);
-        natInfoForPersonOne.setSamplingTime(20220414);
+        natInfoForPersonOne.setSamplingTime(LocalDateTime.now());
         natInfoForPersonOne.setSamplingPlace("河南省郑州市金水区郑州航空工业管理学院东校区中心广场");
         NATInfo natInfoForPersonOneResult = new NATInfo();
         BeanUtils.copyProperties(natInfoForPersonOne, natInfoForPersonOneResult);
         natInfoForPersonOneResult.setSamplingPerson(person0);
         natInfoForPersonOneResult.setIsSamplingPerson(person1);
         natInfoForPersonOneResult.setDetectHospital("郑州大学第一附属医院");
-        natInfoForPersonOneResult.setDetectTime(20220415);
+        natInfoForPersonOneResult.setDetectTime(LocalDateTime.now());
         natInfoForPersonOneResult.setDetectPerson(person0);
         natInfoForPersonOneResult.setDetectResult("阴性");
         natInfoList.add(natInfoForPersonOne);
@@ -77,7 +78,7 @@ public class BlockChainService {
         natInfoForPersonTwo.setReportId(UUID.randomUUID().toString().replaceAll("-", ""));
         natInfoForPersonTwo.setIsSamplingPerson(person2);
         natInfoForPersonTwo.setSamplingPerson(person3);
-        natInfoForPersonTwo.setSamplingTime(20220320);
+        natInfoForPersonTwo.setSamplingTime(LocalDateTime.now());
         natInfoForPersonTwo.setSamplingPlace("上海市浦东新区曹路镇康平佳苑门卫处");
         natInfoList.add(natInfoForPersonTwo);
         String natInfosString = RSAUtil.encryptByPrivateKey(blockChain.getPrivateKey(),

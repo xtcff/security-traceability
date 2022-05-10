@@ -38,8 +38,7 @@ public class BlockChainController {
     public String scanBlock() {
         log.info("BlockChainController BlockChain scanBlock start");
         String resp = JSON.toJSONString(blockChain.getBlockChain());
-        log.info("BlockChainController BlockChain scanBlock end, resp11111111111 = [{}]", blockChain.getPublicKeys());
-        log.info("BlockChainController BlockChain scanBlock end, resp = [{}]", resp);
+        log.info("BlockChainController BlockChain scanBlock end, resp = [{}], publicKey = [{}]", resp, blockChain.getPublicKeys());
         return resp;
     }
 
