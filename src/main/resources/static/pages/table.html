@@ -100,6 +100,32 @@
 
                     </template>
                 </el-table-column>
+                <el-dialog title="上传检测结果" :visible.sync="dialogFormVisible" :append-to-body="true" height="30%" center>
+                    <el-form ref="uploadResultForm" :model="uploadResultForm" :rules="rules">
+                        <el-form-item label="报告单号" prop="reportId">
+                            <el-input v-model="uploadResultForm.reportId" :disabled="true"></el-input>
+                        </el-form-item>
+                        <el-form-item label="检测机构" prop="detectHospital">
+                            <el-input v-model="uploadResultForm.detectHospital"></el-input>
+                        </el-form-item>
+                        <el-form-item label="检测人姓名" prop="detectPerson.name">
+                            <el-input v-model="uploadResultForm.detectPerson.name"></el-input>
+                        </el-form-item>
+                        <el-form-item label="检测人身份证号" prop="detectPerson.idNumber">
+                            <el-input v-model="uploadResultForm.detectPerson.idNumber" maxlength="18" minlength="18" show-word-limit clearable></el-input>
+                        </el-form-item>
+                        <el-form-item label="检测结果" prop="detectResult">
+                            <el-select v-model="uploadResultForm.detectResult" placeholder="请选择">
+                                <el-option label="阴性" value="阴性"></el-option>
+                                <el-option label="阳性" value="阳性"></el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item style="text-align: center;">
+                            <el-button type="primary" @click="onSubmit('uploadResultForm')">提交</el-button>
+                            <el-button @click="dialogFormVisible = false">取消</el-button>
+                        </el-form-item>
+                    </el-form>
+                </el-dialog>
             </el-table>
         </template>
         <!-- 分页 -->
@@ -130,90 +156,5 @@
         width: 50%;
     }
 </style>
-<script>
-    var vm = new Vue({
-        el: "#table",
-        data: {
-            inputForReportId: '',
-            inputForIdNumber: '',
-            options: [{
-                value: '阴性',
-                label: '阴性'
-            }, {
-                value: '阳性',
-                label: '阳性'
-            }],
-            selectValue: '',
-            samplingTime: [],
-            pageTable: {
-                pageNum: 1,
-                pageSize: 10,
-                size: 1,
-                total: 0,
-                pages: 1,
-                tableData: []
-            }
-        },
-        created: function () {
-            axios.post("/query/queryPageNATInfos", {"pageNum": this.pageTable.pageNum,"pageSize": this.pageTable.pageSize}).then(res => {
-                this.pageTable.tableData = res.data.list;
-                this.pageTable.size = res.data.size;
-                this.pageTable.total = res.data.total;
-                this.pageTable.pages = res.data.pages;
-            })
-        },
-        methods: {
-            indexMethod(index) {
-                return index + (this.pageTable.pageNum - 1) * this.pageTable.pageSize + 1;
-            },
-            handleSizeChange(val) {
-                axios.post("/query/queryPageNATInfos", {"pageNum": this.pageTable.pageNum,"pageSize": val}).then(res => {
-                    this.pageTable.tableData = res.data.list;
-                    this.pageTable.pageSize = res.data.pageSize;
-                    this.pageTable.size = res.data.size;
-                    this.pageTable.total = res.data.total;
-                    this.pageTable.pages = res.data.pages;
-                })
-            },
-            handleCurrentChange(val) {
-                axios.post("/query/queryPageNATInfos", {"pageNum": val,"pageSize": this.pageTable.pageSize}).then(res => {
-                    this.pageTable.tableData = res.data.list;
-                    this.pageTable.pageNum = res.data.pageNum;
-                    this.pageTable.size = res.data.size;
-                    this.pageTable.total = res.data.total;
-                    this.pageTable.pages = res.data.pages;
-                })
-            },
-            queryByInput(){
-                var params = {
-                    "pageNum": this.pageTable.pageNum,
-                    "pageSize": this.pageTable.pageSize,
-                    "reportId": this.inputForReportId,
-                    "idNumber": this.inputForIdNumber,
-                    "detectResult": this.selectValue,
-                    "samplingTimeBegin": this.samplingTime[0],
-                    "samplingTimeEnd": this.samplingTime[1]
-                };
-                axios.post("/query/queryPageNATInfos", params).then(res => {
-                    this.pageTable.tableData = res.data.list;
-                    this.pageTable.pageNum = res.data.pageNum;
-                    this.pageTable.pageSize = res.data.pageSize;
-                    this.pageTable.size = res.data.size;
-                    this.pageTable.total = res.data.total;
-                    this.pageTable.pages = res.data.pages;
-                });
-            },
-            clearInput(){
-                this.inputForReportId = '';
-                this.inputForIdNumber = '';
-                this.selectValue = '';
-                this.samplingTime = [];
-                this.queryByInput();
-            },
-            uploadResult(props) {
-
-            },
-        }
-    })
-</script>
+<script src="./table.js"></script>
 </html>

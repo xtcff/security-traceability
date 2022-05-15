@@ -3,7 +3,7 @@ var uploadResultVue = new Vue({
 	data() {
 		return {
 			form: {
-				reportId: sessionStorage.getItem('reportId'),
+				reportId: '',
 				detectHospital: '',
 				detectPerson: {
 					name: '',
